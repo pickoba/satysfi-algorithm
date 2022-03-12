@@ -1,0 +1,33 @@
+opam-version: "2.0"
+name: "satysfi-algorithm"
+version: "1.0.0"
+synopsis: "Typesetting algorithms in pseudo-code"
+description: """
+Typesetting algorithms in pseudo-code. It is the equivalent of the algorithmic package in LaTeX.
+"""
+maintainer: "KOBAYASHI Ryota <koba.pic@gmail.com>"
+authors: "KOBAYASHI Ryota <koba.pic@gmail.com>"
+license: "MIT"
+homepage: "https://github.com/pickoba/satysfi-algorithm"
+dev-repo: "git+https://github.com/pickoba/satysfi-algorithm.git"
+bug-reports: "https://github.com/pickoba/satysfi-algorithm/issues"
+depends: [
+  "satysfi" { >= "0.0.6" & < "0.0.7" }
+  "satyrographos" { >= "0.0.2.6" & < "0.0.3" }
+
+  # If your library depends on other libraries, please write down here
+  "satysfi-dist"
+  "satysfi-base"
+]
+build: [
+  ["satyrographos" "opam" "build"
+   "--name" "algorithm"
+   "--prefix" "%{prefix}%"
+   "--script" "%{build}%/Satyristes"]
+]
+install: [
+  ["satyrographos" "opam" "install"
+   "--name" "algorithm"
+   "--prefix" "%{prefix}%"
+   "--script" "%{build}%/Satyristes"]
+]

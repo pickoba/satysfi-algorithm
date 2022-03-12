@@ -1,0 +1,36 @@
+opam-version: "2.0"
+name: "satysfi-algorithm-doc"
+version: "1.0.0"
+synopsis: "Document of satysfi-algorithm"
+description: """
+Document of satysfi-algorithm.
+"""
+maintainer: "KOBAYASHI Ryota <koba.pic@gmail.com>"
+authors: "KOBAYASHI Ryota <koba.pic@gmail.com>"
+license: "MIT" # Choose what you want
+homepage: "https://github.com/pickoba/satysfi-algorithm"
+dev-repo: "git+https://github.com/pickoba/satysfi-algorithm.git"
+bug-reports: "https://github.com/pickoba/satysfi-algorithm/issues"
+depends: [
+  "satysfi" { >= "0.0.6" & < "0.0.7" }
+  "satyrographos" { >= "0.0.2.6" & < "0.0.3" }
+
+  # You may want to include the corresponding library
+  "satysfi-algorithm" {= "%{version}%"}
+
+  # Other libraries
+  "satysfi-dist"
+  "satysfi-base"
+]
+build: [
+  ["satyrographos" "opam" "build"
+   "--name" "algorithm-doc"
+   "--prefix" "%{prefix}%"
+   "--script" "%{build}%/Satyristes"]
+]
+install: [
+  ["satyrographos" "opam" "install"
+   "--name" "algorithm-doc"
+   "--prefix" "%{prefix}%"
+   "--script" "%{build}%/Satyristes"]
+]
