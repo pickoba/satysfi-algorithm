@@ -1,33 +1,497 @@
 @require: stdjareport
+@require: fss/style
 @require: itemize
-@require: annot
 
-@require: base/typeset/base
-@require: base/float
+@import: ../src/core
+@import: ../src/style/c
+@import: ../src/style/python
 
-@require: algorithm/algorithm
+let-block ctx +two-column ?:ratio l r =
+  let ratio = ratio |> Option.from 0.5 in
+  let margin = 10pt in
+  let eff-width = get-text-width ctx -' margin in
+  let left-ib = embed-block-top ctx (eff-width *' ratio) (fun ctx -> read-block ctx l) in
+  let right-ib = embed-block-top ctx (eff-width *' (1. -. ratio)) (fun ctx -> read-block ctx r) in
+  line-break true true ctx (left-ib ++ inline-fil ++ right-ib)
 
-% Document-local function definition
-let-inline \show-float f =
-  f
-  |> Float.to-string
-  |> embed-string
+let-math \gets = ${\leftarrow}
+let-math \bmod = ${\ \mathrm{mod}\ }
+
+let-block ctx +Assert it =
+  inline-scheme ctx true {\keyword{assert}\ #it;}
+
+let-block ctx +Block inner =
+  block-scheme ctx
+    {\keyword{begin}}
+    inner
+    {\keyword{end}}
+
 in
 
 document (|
-  title = {algorithm Manual};
-  author = {Your Name};
+  title = {Algorithm};
+  author = {pickoba};
 |) '<
-  +p {
-    See `https://qiita.com/na4zagin3/items/b392f5d522f9bcc0493b` for the instruction in Japanese.
+  +p{
+    Algorithm パッケージは、\SATySFi; 上で擬似コードを記述するためのパッケージです。\LaTeX; における algorithmicx パッケージ等に相当する機能を提供することを目指しています。
   }
-  +chapter{Examples} <
-    +p {
-      ${\pi = \mathrm-token!(Float.to-string Algorithm.pi)}.
+
+  +chapter?:(`sec:basic-usage`){基本的な使い方}<
+    +p{
+      以下を記述して Algorithm パッケージを読み込みます。
     }
-    +p {
-      Geometric mean of 1, 3, and 5 is
-      \show-float(Algorithm.geo-mean [1.; 3.; 5.]);
+
+    +code(```
+    @require: algorithm/core
+    @require: algorithm/style/default
+    ```);
+
+    +p{
+      ここでは標準（default）のスタイルを指定していますが、Python 風、C 風のスタイルを選択することも可能です（後述）。
     }
+
+    +p{
+      実際に擬似コードの組版をしてみましょう。以下はユークリッドの互除法の記述例です。（`\bmod`, `\gets` 等は適切に定義されていると仮定）
+    }
+
+    +two-column?:(0.6)<
+      +code(```
+      +algorithmic<
+        +Procedure{Euclid}{${a, b}}<
+          +State{${r \gets a \bmod b}}
+          +While{${r \neq 0}}<
+            +State{${a \gets b}}
+            +State{${b \gets r}}
+            +State{${r \gets a \bmod b}}
+          >
+          +State{\Return{${b}}}
+        >
+      >
+      ```);
+    ><
+      % このマニュアルでは複数のスタイルを併用するため名前空間を明記しています
+      +algorithmic<
+        +AlgorithmStyleDefault.Procedure{Euclid}{${a, b}}<
+          +AlgorithmStyleDefault.State{${r \gets a \bmod b}}
+          +AlgorithmStyleDefault.While{${r \neq 0}}<
+            +AlgorithmStyleDefault.State{${a \gets b}}
+            +AlgorithmStyleDefault.State{${b \gets r}}
+            +AlgorithmStyleDefault.State{${r \gets a \bmod b}}
+          >
+          +AlgorithmStyleDefault.State{\Return{${b}}}
+        >
+      >
+    >
+
+    +p{
+      擬似コードは `+algorithmic` で括り、その中で `+Procedure` や `+State` を使って記述していきます。これらのコマンド名はおおよそ \LaTeX; の algorithmicx パッケージと揃えてあります。次ページから利用可能なコマンドを紹介します。
+    }
+  >
+
+  +chapter{定義されている命令一覧}<
+    +section{基本}<
+      +p{
+        行番号がつく行
+      }
+
+      +two-column<
+        +code(```
+        +State{body}
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.State{body}
+        >
+      >
+
+      +p{
+        行番号がつかない行
+      }
+
+      +two-column<
+        +code(```
+        +Statex{body}
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.Statex{body}
+        >
+      >
+    >
+
+    +section{ループ}<
+      +two-column<
+        +code(```
+        +For{cond}<
+          +State{body}
+        >
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.For{cond}<
+            +AlgorithmStyleDefault.State{body}
+          >
+        >
+      >
+
+      +two-column<
+        +code(```
+        +ForAll{something}<
+          +State{body}
+        >
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.ForAll{something}<
+            +AlgorithmStyleDefault.State{body}
+          >
+        >
+      >
+
+      +two-column<
+        +code(```
+        +While{cond}<
+          +State{body}
+        >
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.While{cond}<
+            +AlgorithmStyleDefault.State{body}
+          >
+        >
+      >
+
+      +two-column<
+        +code(```
+        +RepeatUntil<
+          +State{body}
+        >{cond}
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.RepeatUntil<
+            +AlgorithmStyleDefault.State{body}
+          >{cond}
+        >
+      >
+
+      +two-column<
+        +code(```
+        +Loop<
+          +State{body}
+        >
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.Loop<
+            +AlgorithmStyleDefault.State{body}
+          >
+        >
+      >
+    >
+
+    +section{条件分岐}<
+      +p{
+        else 節が存在し得るため、`+If` は自動では閉じられないことに注意。
+      }
+
+      +two-column<
+        +code(```
+        +If{cond}<
+          +State{body}
+        >
+        +ElsIf{cond}<
+          +State{body}
+        >
+        +Else<
+          +State{body}
+        >
+        +EndIf;
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.If{cond}<
+            +AlgorithmStyleDefault.State{body}
+          >
+          +AlgorithmStyleDefault.ElsIf{cond}<
+            +AlgorithmStyleDefault.State{body}
+          >
+          +AlgorithmStyleDefault.Else<
+            +AlgorithmStyleDefault.State{body}
+          >
+          +AlgorithmStyleDefault.EndIf;
+        >
+      >
+    >
+
+    +section{Procedure / Function}<
+      +p{
+        関数名は自動的にスモールキャピタルになる。
+      }
+
+      +two-column<
+        +code(```
+        +Procedure{name}{params}<
+          +State{body}
+        >
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.Procedure{name}{params}<
+            +AlgorithmStyleDefault.State{body}
+          >
+        >
+      >
+
+      +two-column<
+        +code(```
+        +Function{name}{params}<
+          +State{body}
+        >
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.Function{name}{params}<
+            +AlgorithmStyleDefault.State{body}
+          >
+        >
+      >
+    >
+
+    +section{コメント}<
+      +p{
+        コメントは挿入したい行に対応する `inline-text` 内に `\Comment` を用いて記述する。`end while` 等のブロックの終端行にコメントを挿入する場合は `+Comment` を用いる。スタイルは `+algorithmic` の引数で調整可能。詳細は第\ref(`sec:custom-style`);章を参照。
+      }
+
+      +two-column?:(0.6)<
+        +code(```
+        +While{cond\Comment{1st comment}}<
+          +State{body\Comment{2nd comment}}
+          +Comment{3rd comment}
+        >
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.While{cond\Comment{1st comment}}<
+            +AlgorithmStyleDefault.State{body\Comment{2nd comment}}
+            +Comment{3rd comment}
+          >
+        >
+      >
+    >
+
+    +section{その他}<
+      +p{
+        `+Require`, `+Ensure` には行番号がつかない。
+      }
+
+      +two-column<
+        +code(```
+        +Require{something}
+        ```);
+      ><
+        +algorithmic<
+          +Require{something}
+        >
+      >
+
+      +two-column<
+        +code(```
+        +Ensure{something}
+        ```);
+      ><
+        +algorithmic<
+          +Ensure{something}
+        >
+      >
+    >
+  >
+
+  +chapter{コマンドの定義}<
+    +p{
+      `Algorithm` モジュール内の `inline-scheme`, `block-scheme` を利用することで独自のコマンドが定義できます。以下では `Algorithm` モジュールが `open` されていることを仮定しています。
+    }
+
+    +section{一行のコマンドを定義する場合}<
+      +p{
+        `inline-scheme` : `context -> bool -> inline-text -> block-boxes` を使えばよいです。第二引数は行番号を付与するかどうかを示します。例えば、
+      }
+
+      +code(```
+      let-block ctx +Assert it =
+        inline-scheme ctx true {\keyword{assert}\ #it;}
+      ```);
+
+      +p{
+        と定義することで
+      }
+
+      +two-column<
+        +code(```
+        +Assert{body}
+        ```);
+      ><
+        +algorithmic<
+          +Assert{body}
+        >
+      >
+
+      +p{
+        のように使えます。なお `\keyword` も `Algorithm` モジュール内で定義されているコマンドです。
+      }
+    >
+
+    +section{ブロックを作るコマンドを定義する場合}<
+      +p{
+        `block-scheme` : `context -> inline-text -> block-text -> inline-text -> block-boxes` を使えばよいです。例えば、
+      }
+
+      +code(```
+      let-block ctx +Block inner =
+        block-scheme ctx
+          {\keyword{begin}}
+          inner
+          {\keyword{end}}
+      ```);
+
+      +p{
+        と定義することで
+      }
+
+      +two-column<
+        +code(```
+        +Block<
+          +State{body}
+        >```);
+      ><
+        +algorithmic<
+          +Block<
+            +AlgorithmStyleDefault.State{body}
+          >
+        >
+      >
+
+      +p{
+        のように使えます。なお、第二・第四引数の `inline-text` は空にすることで対応する行を非表示にすることが可能です。
+      }
+    >
+  >
+
+  +chapter{レイアウトのカスタマイズ}<
+    +p{
+      Algorithm パッケージでは、`@require` で読み込むファイルを変更することで異なる表記（\LaTeX; の algorithmicx にならいレイアウトと呼称します）に変更することができます。
+    }
+
+    +section{Python 風のレイアウト}<
+      +p{
+        読み込み時に
+      }
+
+      +code(```
+      @require: algorithm/core
+      @require: algorithm/style/python
+      ```);
+
+      +p{
+        と記載することで以下の出力を得られます（コードは第\ref(`sec:basic-usage`);章を参照）。
+      }
+
+      +algorithmic<
+        +AlgorithmStylePython.Procedure{Euclid}{${a, b}}<
+          +AlgorithmStyleDefault.State{${r \gets a \bmod b}}
+          +AlgorithmStylePython.While{${r \neq 0}}<
+            +AlgorithmStyleDefault.State{${a \gets b}}
+            +AlgorithmStyleDefault.State{${b \gets r}}
+            +AlgorithmStyleDefault.State{${r \gets a \bmod b}}
+          >
+          +AlgorithmStyleDefault.State{\Return{${b}}}
+        >
+      >
+    >
+
+    +section{C 言語風のレイアウト}<
+      +p{
+        読み込み時に
+      }
+
+      +code(```
+      @require: algorithm/core
+      @require: algorithm/style/c
+      ```);
+
+      +p{
+        と記載することで以下の出力を得られます。
+      }
+
+      +algorithmic<
+        +AlgorithmStyleC.Procedure{Euclid}{${a, b}}<
+          +AlgorithmStyleC.State{${r \gets a \bmod b}}
+          +AlgorithmStyleC.While{${r \neq 0}}<
+            +AlgorithmStyleC.State{${a \gets b}}
+            +AlgorithmStyleC.State{${b \gets r}}
+            +AlgorithmStyleC.State{${r \gets a \bmod b}}
+          >
+          +AlgorithmStyleC.State{\Return{${b}}}
+        >
+      >
+    >
+  >
+
+  +chapter?:(`sec:custom-style`){スタイルのカスタマイズ}<
+    +p{
+      `+algorithmic` に与える第一オプショナル引数のレコードによってスタイルをカスタマイズできます。以下のデフォルト値は `Algorithm.default-config` として与えられています。
+    }
+
+    +listing{
+      * `font-set` : `fss-font-set`（デフォルト値 : `FssFonts.default-font-set`）
+        ** コード中で利用するフォントセット。詳細は fss パッケージを参照。
+      * `keyword` : `style list`（デフォルト値 : `[bold]`）
+        ** プログラム中のキーワード（予約語）に対するスタイルを指定。詳細は fss パッケージを参照。
+      * `line-start` : `int`（デフォルト値 : `1`）
+        ** 行の開始番号。
+      * `show-linenumber` : `bool`（デフォルト値 : `true`）
+        ** 行番号を表示するか。
+      * `indent-scale` : `float`（デフォルト値 : `1.`）
+        ** フォントサイズに対するインデントサイズの比
+      * `prefixf` : `context -> int -> inline-boxes`（デフォルト値 : `default-prefixf`）
+        ** 各行のプレフィックス（行番号表示）をカスタマイズするためのフック。
+      * `commentf` : `context -> inline-text -> inline-boxes`（デフォルト値 : `default-commentf`）
+        ** コメントをカスタマイズするためのフック。
+    }
+
+    +p{
+      例えば以下のようにカスタマイズできます。
+    }
+
+    +code(```
+    +algorithmic?:(|
+      Algorithm.default-config with
+        keyword = [bold; italic];
+        line-start = 10;
+        indent-scale = 2.;
+        commentf = fun ctx it ->
+          (inline-skip 15pt ++ read-inline ctx {// #it;});
+    |)<
+      +State{${s \leftarrow 0}\Comment{comment}}
+      +For{${i \leftarrow 1, n}}<
+        +State{${s \leftarrow s + i}}
+      >
+    >
+    ```);
+
+    +algorithmic?:(|
+      Algorithm.default-config with
+        keyword = [bold; italic];
+        line-start = 10;
+        indent-scale = 2.;
+        commentf = fun ctx it ->
+          (inline-skip 15pt ++ read-inline ctx {// #it;});
+    |)<
+      +AlgorithmStyleDefault.State{${s \leftarrow 0}\Comment{comment}}
+      +AlgorithmStyleDefault.For{${i \leftarrow 1, n}}<
+        +AlgorithmStyleDefault.State{${s \leftarrow s + i}}
+      >
+    >
   >
 >
