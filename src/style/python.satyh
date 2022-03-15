@@ -1,0 +1,93 @@
+@import: ../core
+@import: default
+
+open Algorithm
+
+module AlgorithmStylePython : sig
+
+  direct +If : [inline-text; block-text] block-cmd
+  direct +ElsIf : [inline-text; block-text] block-cmd
+  direct +Else : [block-text] block-cmd
+  direct +EndIf : [] block-cmd
+
+  direct +For : [inline-text; block-text] block-cmd
+  direct +ForAll : [inline-text; block-text] block-cmd
+  direct +While : [inline-text; block-text] block-cmd
+  direct +RepeatUntil : [block-text; inline-text] block-cmd
+  direct +Loop : [block-text] block-cmd
+
+  direct +Function : [inline-text; inline-text; block-text] block-cmd
+  direct +Procedure : [inline-text; inline-text; block-text] block-cmd
+
+end = struct
+
+  % conditional branch
+
+  let-block ctx +If cond inner =
+    block-scheme ctx
+      {\keyword{if}\ #cond;:}
+      inner
+      {}
+
+  let-block ctx +ElsIf cond inner =
+    block-scheme ctx
+      {\keyword{elif}\ #cond;:}
+      inner
+      {}
+
+  let-block ctx +Else inner =
+    block-scheme ctx
+      {\keyword{else}:}
+      inner
+      {}
+
+  let-block ctx +EndIf =
+    block-nil
+
+  % loop
+
+  let-block ctx +For cond inner =
+    block-scheme ctx
+      {\keyword{for}\ #cond;:}
+      inner
+      {}
+
+  let-block ctx +ForAll cond inner =
+    block-scheme ctx
+      {\keyword{for\ all}\ #cond;:}
+      inner
+      {}
+
+  let-block ctx +While cond inner =
+    block-scheme ctx
+      {\keyword{while}\ #cond;:}
+      inner
+      {}
+
+  let-block ctx +RepeatUntil inner cond =
+    block-scheme ctx
+      {\keyword{repeat}:}
+      inner
+      {\keyword{until} #cond;}
+
+  let-block ctx +Loop inner =
+    block-scheme ctx
+      {\keyword{loop}:}
+      inner
+      {}
+
+  % functions
+
+  let-block ctx +Function name param inner =
+    block-scheme ctx
+      {\keyword{def}\ \AlgorithmUtils.textsc{#name;}(#param;):}
+      inner
+      {}
+
+  let-block ctx +Procedure name param inner =
+    block-scheme ctx
+      {\keyword{def}\ \AlgorithmUtils.textsc{#name;}(#param;):}
+      inner
+      {}
+
+end
