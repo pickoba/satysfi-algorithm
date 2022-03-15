@@ -1,0 +1,120 @@
+@import: ../core
+@import: ../utils
+
+open Algorithm
+
+module AlgorithmStyleDefault : sig
+
+  direct +State : [inline-text] block-cmd
+  direct +Statex : [inline-text] block-cmd
+
+  direct +If : [inline-text; block-text] block-cmd
+  direct +ElsIf : [inline-text; block-text] block-cmd
+  direct +Else : [block-text] block-cmd
+  direct +EndIf : [] block-cmd
+
+  direct +For : [inline-text; block-text] block-cmd
+  direct +ForAll : [inline-text; block-text] block-cmd
+  direct +While : [inline-text; block-text] block-cmd
+  direct +RepeatUntil : [block-text; inline-text] block-cmd
+  direct +Loop : [block-text] block-cmd
+
+  direct +Require : [inline-text] block-cmd
+  direct +Ensure : [inline-text] block-cmd
+
+  direct +Function : [inline-text; inline-text; block-text] block-cmd
+  direct +Procedure : [inline-text; inline-text; block-text] block-cmd
+
+  direct \Return : [inline-text] inline-cmd
+
+end = struct
+
+  let-block ctx +State it =
+    inline-scheme ctx true it
+
+  let-block ctx +Statex it =
+    inline-scheme ctx false it
+
+  % conditional branch
+
+  let-block ctx +If cond inner =
+    block-scheme ctx
+      {\keyword{if}\ #cond;\ \keyword{then}}
+      inner
+      {}
+
+  let-block ctx +ElsIf cond inner =
+    block-scheme ctx
+      {\keyword{else\ if}\ #cond;\ \keyword{then}}
+      inner
+      {}
+
+  let-block ctx +Else inner =
+    block-scheme ctx
+      {\keyword{else}}
+      inner
+      {}
+
+  let-block ctx +EndIf =
+    inline-scheme ctx true {\keyword{end\ if}}
+
+  % loop
+
+  let-block ctx +For cond inner =
+    block-scheme ctx
+      {\keyword{for}\ #cond;\ \keyword{do}}
+      inner
+      {\keyword{end\ for}}
+
+  let-block ctx +ForAll cond inner =
+    block-scheme ctx
+      {\keyword{for\ all}\ #cond;\ \keyword{do}}
+      inner
+      {\keyword{end\ for}}
+
+  let-block ctx +While cond inner =
+    block-scheme ctx
+      {\keyword{while}\ #cond;\ \keyword{do}}
+      inner
+      {\keyword{end\ while}}
+
+  let-block ctx +RepeatUntil inner cond =
+    block-scheme ctx
+      {\keyword{repeat}}
+      inner
+      {\keyword{until} #cond;}
+
+  let-block ctx +Loop inner =
+    block-scheme ctx
+      {\keyword{loop}}
+      inner
+      {\keyword{end\ loop}}
+
+  % pre/post condition
+
+  let-block ctx +Require it =
+    inline-scheme ctx false {\keyword{Require:}\ #it;}
+
+  let-block ctx +Ensure it =
+    inline-scheme ctx false {\keyword{Ensure:}\ #it;}
+
+  % functions
+
+  let-block ctx +Function name param inner =
+    block-scheme ctx
+      {\keyword{function}\ \AlgorithmUtils.textsc{#name;}(#param;)}
+      inner
+      {\keyword{end\ function}}
+
+  let-block ctx +Procedure name param inner =
+    block-scheme ctx
+      {\keyword{procedure}\ \AlgorithmUtils.textsc{#name;}(#param;)}
+      inner
+      {\keyword{end\ procedure}}
+
+  % inline commands
+
+  let-inline \Return it =
+    {\keyword{return}\ #it;}
+
+end
