@@ -16,6 +16,7 @@
   (dependencies
     ((dist ()) ; Standard library
      (base ()) ; Base library
+     (fss ()) ; Font selection scheme
     )))
 
 ;; Library doc declaration
@@ -40,4 +41,5 @@
     ((algorithm ()) ; the main library
      (dist ()) ; Standard library
      (base ()) ; Base library
+     (fss ()) ; Font selection scheme
     )))

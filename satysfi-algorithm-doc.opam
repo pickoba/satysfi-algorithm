@@ -21,6 +21,7 @@ depends: [
   # Other libraries
   "satysfi-dist"
   "satysfi-base"
+  "satysfi-fss"
 ]
 build: [
   ["satyrographos" "opam" "build"
