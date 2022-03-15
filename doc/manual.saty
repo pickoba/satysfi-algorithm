@@ -440,39 +440,37 @@ document (|
 
   +chapter?:(`sec:custom-style`){スタイルのカスタマイズ}<
     +p{
-      `+algorithmic` に与える第一オプショナル引数のレコードによってスタイルをカスタマイズできます。以下のデフォルト値は `Algorithm.default-config` として与えられています。
+      `+algorithmic` に与える第一オプショナル引数の関数によってスタイルをカスタマイズできます。調整できる項目は以下の通りです。
     }
 
     +listing{
       * `font-set` : `fss-font-set`（デフォルト値 : `FssFonts.default-font-set`）
-        ** コード中で利用するフォントセット。詳細は fss パッケージを参照。
-      * `keyword` : `style list`（デフォルト値 : `[bold]`）
+        ** コード中で利用するフォントセットを指定。詳細は fss パッケージを参照。
+      * `keyword-style` : `style list`（デフォルト値 : `[bold]`）
         ** プログラム中のキーワード（予約語）に対するスタイルを指定。詳細は fss パッケージを参照。
-      * `line-start` : `int`（デフォルト値 : `1`）
+      * `linenumber-start` : `int`（デフォルト値 : `1`）
         ** 行の開始番号。
-      * `show-linenumber` : `bool`（デフォルト値 : `true`）
-        ** 行番号を表示するか。
       * `indent-scale` : `float`（デフォルト値 : `1.`）
-        ** フォントサイズに対するインデントサイズの比
+        ** フォントサイズに対するインデントサイズの比。
       * `prefixf` : `context -> int -> inline-boxes`（デフォルト値 : `default-prefixf`）
-        ** 各行のプレフィックス（行番号表示）をカスタマイズするためのフック。
+        ** 各行のプレフィックス（行番号表示）をカスタマイズするためのフック。行番号を非表示にしたい場合はここに `Algorithm.null-prefixf` を指定。
       * `commentf` : `context -> inline-text -> inline-boxes`（デフォルト値 : `default-commentf`）
         ** コメントをカスタマイズするためのフック。
     }
 
     +p{
-      例えば以下のようにカスタマイズできます。
+      実際にはこれらに `set-` を前置した関数を連結することでスタイルを指定します。
+      例えば以下のようにカスタマイズできます\footnote{\SATySFi; v0.1.0 がリリースされた後に、ラベル付きオプショナル引数を利用する形に変更する予定です。}。ここでも `Algorithm` モジュールが `open` されていることを仮定しています。
     }
 
     +code(```
-    +algorithmic?:(|
-      Algorithm.default-config with
-        keyword = [bold; italic];
-        line-start = 10;
-        indent-scale = 2.;
-        commentf = fun ctx it ->
-          (inline-skip 15pt ++ read-inline ctx {// #it;});
-    |)<
+    +algorithmic?:(fun config -> config
+      |> set-linenumber-start 10
+      |> set-keyword-style [bold; italic]
+      |> set-indent-scale 2.
+      |> set-commentf (fun ctx it ->
+          (inline-skip 15pt ++ read-inline ctx {// #it;}))
+    )<
       +State{${s \leftarrow 0}\Comment{comment}}
       +For{${i \leftarrow 1, n}}<
         +State{${s \leftarrow s + i}}
@@ -480,14 +478,13 @@ document (|
     >
     ```);
 
-    +algorithmic?:(|
-      Algorithm.default-config with
-        keyword = [bold; italic];
-        line-start = 10;
-        indent-scale = 2.;
-        commentf = fun ctx it ->
-          (inline-skip 15pt ++ read-inline ctx {// #it;});
-    |)<
+    +algorithmic?:(fun config -> config
+      |> set-linenumber-start 10
+      |> set-keyword-style [bold; italic]
+      |> set-indent-scale 2.
+      |> set-commentf (fun ctx it ->
+          (inline-skip 15pt ++ read-inline ctx {// #it;}))
+    )<
       +AlgorithmStyleDefault.State{${s \leftarrow 0}\Comment{comment}}
       +AlgorithmStyleDefault.For{${i \leftarrow 1, n}}<
         +AlgorithmStyleDefault.State{${s \leftarrow s + i}}

@@ -3,30 +3,37 @@
 @require: fss/fonts
 @require: fss/style
 
-type algorithm-config = (|
-  font-set : fss-font-set;
-  keyword : style list;
-  line-start : int;
-  show-linenumber : bool;
-  indent-scale : float;
-  prefixf : context -> int -> inline-boxes;
-  commentf : context -> inline-text -> inline-boxes;
-|)
-
 module Algorithm : sig
 
-  val default-config : algorithm-config
+  type algorithm-config
+  val set-font-set : fss-font-set -> algorithm-config -> algorithm-config
+  val set-keyword-style : style list -> algorithm-config -> algorithm-config
+  val set-indent-scale : float -> algorithm-config -> algorithm-config
+  val set-linenumber-start : int -> algorithm-config -> algorithm-config
+  val set-prefixf : (context -> int -> inline-boxes) -> algorithm-config -> algorithm-config
+  val set-commentf : (context -> inline-text -> inline-boxes) -> algorithm-config -> algorithm-config
+
+  val null-prefixf : context -> int -> inline-boxes
 
   val inline-scheme : context -> bool -> inline-text -> block-boxes
   val block-scheme : context -> inline-text -> block-text -> inline-text -> block-boxes
 
   val \keyword : [inline-text] inline-cmd
 
-  direct +algorithmic : [algorithm-config?; block-text] block-cmd
+  direct +algorithmic : [(algorithm-config -> algorithm-config)?; block-text] block-cmd
   direct \Comment : [inline-text] inline-cmd
   direct +Comment : [inline-text] block-cmd
 
 end = struct
+
+  type algorithm-config = (|
+    font-set : fss-font-set;
+    keyword-style : style list;
+    linenumber-start : int;
+    indent-scale : float;
+    prefixf : context -> int -> inline-boxes;
+    commentf : context -> inline-text -> inline-boxes;
+  |)
 
   % current line count (always start from 0)
   let-mutable line-counter <- 0
@@ -48,6 +55,9 @@ end = struct
     let (w, _, _) = get-natural-metrics num-ib in
     let skip = inline-skip (10pt -' w) in
     skip ++ num-ib
+
+  let null-prefixf ctx num =
+    inline-nil
 
   let default-commentf ctx it =
     let shape-triangle =
@@ -74,13 +84,19 @@ end = struct
 
   let default-config = (|
     font-set = FssFonts.default-font-set;
-    keyword = [bold];
-    line-start = 1;
-    show-linenumber = true;
+    keyword-style = [bold];
+    linenumber-start = 1;
     indent-scale = 1.;
     prefixf = default-prefixf;
     commentf = default-commentf;
   |)
+
+  let set-font-set font-set config = (| config with font-set = font-set |)
+  let set-keyword-style style config = (| config with keyword-style = style |)
+  let set-indent-scale scale config = (| config with indent-scale = scale |)
+  let set-linenumber-start n config = (| config with linenumber-start = n |)
+  let set-prefixf prefixf config = (| config with prefixf = prefixf |)
+  let set-commentf commentf config = (| config with commentf = commentf |)
 
   let-mutable config <- default-config
 
@@ -92,10 +108,10 @@ end = struct
       block-nil
     else
       % line number
-      let prefix-ib = match (config#show-linenumber, with-prefix) with
-      | (true, true) ->
-          config#prefixf ctx (config#line-start + !line-counter)
-      | _ -> inline-nil
+      let prefix-ib = if with-prefix then
+        config#prefixf ctx (config#linenumber-start + !line-counter)
+      else
+        inline-nil
       in
       % indent before main content
       let font-size = ctx |> get-font-size in
@@ -125,11 +141,12 @@ end = struct
 
   let-inline ctx \keyword it =
     let config = !config in
-    let style = config#keyword in
+    let style = config#keyword-style in
     read-inline ctx {\font-style(style)(it);}
 
-  let-block ctx +algorithmic ?:conf inner =
-    let () = config <- conf |> Option.from default-config in
+  let-block ctx +algorithmic ?:format inner =
+    let format = format |> Option.from (fun o -> o) in
+    let () = config <- format default-config in
     let config = !config in
     let () = line-counter <- 0 in
     let () = indent <- 0 in
