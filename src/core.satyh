@@ -1,0 +1,150 @@
+@require: base/length
+@require: fss/fss
+@require: fss/fonts
+@require: fss/style
+
+type algorithm-config = (|
+  font-set : fss-font-set;
+  keyword : style list;
+  line-start : int;
+  show-linenumber : bool;
+  indent-scale : float;
+  prefixf : context -> int -> inline-boxes;
+  commentf : context -> inline-text -> inline-boxes;
+|)
+
+module Algorithm : sig
+
+  val default-config : algorithm-config
+
+  val inline-scheme : context -> bool -> inline-text -> block-boxes
+  val block-scheme : context -> inline-text -> block-text -> inline-text -> block-boxes
+
+  val \keyword : [inline-text] inline-cmd
+
+  direct +algorithmic : [algorithm-config?; block-text] block-cmd
+  direct \Comment : [inline-text] inline-cmd
+  direct +Comment : [inline-text] block-cmd
+
+end = struct
+
+  % current line count (always start from 0)
+  let-mutable line-counter <- 0
+
+  % current indent level
+  let-mutable indent <- 0
+
+  % comment on the line. cleared each time a line is processed
+  let-mutable line-comment <- None
+
+  % "depth" of the last line retrieved by get-natural-metrics
+  let-mutable last-depth <- 0pt
+
+  let default-prefixf ctx num =
+    let font-size = ctx |> get-font-size in
+    let ctx = ctx |> set-font-size (font-size *' 0.8) in
+    let num-it = embed-string (arabic num) in
+    let num-ib = read-inline ctx {#num-it;:\ } in
+    let (w, _, _) = get-natural-metrics num-ib in
+    let skip = inline-skip (10pt -' w) in
+    skip ++ num-ib
+
+  let default-commentf ctx it =
+    let shape-triangle =
+      let font-size = ctx |> get-font-size in
+      let color = ctx |> get-text-color in
+      let label-width = font-size *' 1. in
+      let ysize = font-size *' 0.2 in
+      let xsize = ysize *' (1.732 /. 2.) in
+      let line (x, y) =
+        let x1 = x +' (label-width *' .5) -' xsize in
+        let x2 = x +' (label-width *' .5) +' xsize in
+        let y0 = y +' font-size *' 0.3 in
+        let y1 = y0 +' ysize in
+        let y2 = y0 -' ysize in
+        start-path (x1, y1)
+        |> line-to (x1, y2)
+        |> line-to (x2, y0)
+        |> close-with-line
+      in
+      inline-graphics label-width (font-size *' 0.5) 0pt
+        (fun (x, y) -> [stroke 0.5pt color (line (x, y))])
+    in
+    inline-fil ++ shape-triangle ++ (read-inline ctx it)
+
+  let default-config = (|
+    font-set = FssFonts.default-font-set;
+    keyword = [bold];
+    line-start = 1;
+    show-linenumber = true;
+    indent-scale = 1.;
+    prefixf = default-prefixf;
+    commentf = default-commentf;
+  |)
+
+  let-mutable config <- default-config
+
+  let inline-scheme ctx with-prefix it =
+    let config = !config in
+    let ib = read-inline ctx it in
+    let (w, h, d) = get-natural-metrics ib in
+    if Length.(w == 0pt && h == 0pt && d == 0pt) then
+      block-nil
+    else
+      % line number
+      let prefix-ib = match (config#show-linenumber, with-prefix) with
+      | (true, true) ->
+          config#prefixf ctx (config#line-start + !line-counter)
+      | _ -> inline-nil
+      in
+      % indent before main content
+      let font-size = ctx |> get-font-size in
+      let indent-ib = inline-skip ((font-size *' config#indent-scale) *' (float !indent)) in
+      % comment
+      let comment-ib = match !line-comment with
+      | Some(it) -> config#commentf ctx it
+      | None -> inline-fil
+      in
+      let line-ib = prefix-ib ++ indent-ib ++ ib ++ comment-ib in
+      % adjust paragraph margin to keep the line feed constant
+      let (_, h, d) = get-natural-metrics line-ib in
+      let ctx = ctx |> set-paragraph-margin (font-size *' 0.6 -' !last-depth) 0pt in
+      % side effects
+      let () = if with-prefix then line-counter <- !line-counter + 1 else () in
+      let () = last-depth <- d in
+      let () = line-comment <- None in
+      line-break true true ctx line-ib
+
+  let block-scheme ctx start inner closing =
+    let start-bb = inline-scheme ctx true start in
+    let () = indent <- !indent + 1 in
+    let inner-bb = read-block ctx inner in
+    let () = indent <- !indent - 1 in
+    let closing-bb = inline-scheme ctx true closing in
+    start-bb +++ inner-bb +++ closing-bb
+
+  let-inline ctx \keyword it =
+    let config = !config in
+    let style = config#keyword in
+    read-inline ctx {\font-style(style)(it);}
+
+  let-block ctx +algorithmic ?:conf inner =
+    let () = config <- conf |> Option.from default-config in
+    let config = !config in
+    let () = line-counter <- 0 in
+    let () = indent <- 0 in
+    let () = line-comment <- None in
+    let () = last-depth <- 0pt in
+    read-block ctx '<
+      +font-style[font-set config#font-set]<#inner;>
+    >
+
+  let-inline ctx \Comment it =
+    let () = line-comment <- Some(it) in
+    inline-nil
+
+  let-block ctx +Comment it =
+    let () = line-comment <- Some(it) in
+    block-nil
+
+end
