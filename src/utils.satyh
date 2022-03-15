@@ -1,0 +1,26 @@
+@require: list
+
+module AlgorithmUtils : sig
+
+  val \textsc : [inline-text] inline-cmd
+
+end = struct
+
+  let-inline ctx \textsc it =
+    let ib = read-inline ctx it in
+    let str = extract-string ib in
+    let chars = string-explode str in
+    chars |> List.map (fun c -> (
+      if 97 <= c && c <= 122 then
+        let s = string-unexplode [c - 32] in
+        let raw = embed-string s in
+        let sz = get-font-size ctx in
+        let ctx = ctx |> set-font-size (sz *' 0.8) in
+        read-inline ctx raw
+      else
+        let s = string-unexplode [c] in
+        let raw = embed-string s in
+        read-inline ctx raw
+    )) |> List.fold-left (++) inline-nil
+
+end
