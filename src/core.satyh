@@ -49,7 +49,7 @@ end = struct
 
   let default-prefixf ctx num =
     let prefix n =
-      let ctx = 
+      let ctx =
         let size = ctx |> get-font-size in
         ctx |> set-font-size (size *' 0.8)
       in
