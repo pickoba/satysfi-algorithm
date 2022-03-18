@@ -470,7 +470,7 @@ document (|
         ** プログラム中のキーワード（予約語）に対するスタイルを指定。詳細は fss パッケージを参照。
       * `linenumber-start` : `int`（デフォルト値 : `1`）
         ** 行の開始番号。
-      * `indent-scale` : `float`（デフォルト値 : `1.`）
+      * `indent-scale` : `float`（デフォルト値 : `1.5`）
         ** フォントサイズに対するインデントサイズの比。
       * `prefixf` : `context -> int -> inline-boxes`（デフォルト値 : `default-prefixf`）
         ** 各行のプレフィックス（行番号表示）をカスタマイズするためのフック。行番号を非表示にしたい場合はここに `Algorithm.null-prefixf` を指定。
