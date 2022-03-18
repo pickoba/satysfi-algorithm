@@ -3,7 +3,7 @@ name: "satysfi-algorithm"
 version: "1.0.0"
 synopsis: "Typesetting algorithms in pseudo-code"
 description: """
-Typesetting algorithms in pseudo-code. It is the equivalent of the algorithmic package in LaTeX.
+Typesetting algorithms in pseudo-code. It is the equivalent of the algorithmicx package in LaTeX.
 """
 maintainer: "KOBAYASHI Ryota <koba.pic@gmail.com>"
 authors: "KOBAYASHI Ryota <koba.pic@gmail.com>"

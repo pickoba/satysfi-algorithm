@@ -1,3 +1,3 @@
 # satysfi-algorithm
 
-Typesetting algorithms in pseudo-code. It is the equivalent of the algorithmic package in LaTeX.
+Typesetting algorithms in pseudo-code. It is the equivalent of the algorithmicx package in LaTeX.
