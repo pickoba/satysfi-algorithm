@@ -26,6 +26,7 @@ module AlgorithmStyleDefault : sig
   direct +Procedure : [inline-text; inline-text; block-text] block-cmd
 
   direct \Return : [inline-text] inline-cmd
+  direct \Call : [inline-text; inline-text] inline-cmd
 
 end = struct
 
@@ -116,5 +117,8 @@ end = struct
 
   let-inline \Return it =
     {\keyword{return}\ #it;}
+
+  let-inline \Call name args =
+    {\AlgorithmUtils.textsc{#name;}(#args;)}
 
 end

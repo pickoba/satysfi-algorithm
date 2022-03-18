@@ -315,6 +315,16 @@ document (|
           +AlgorithmStyleDefault.State{\Return{something}}
         >
       >
+
+      +two-column<
+        +code(```
+        +State{\Call{Func}{args}}
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.State{\Call{Func}{args}}
+        >
+      >
     >
   >
 
