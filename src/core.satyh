@@ -12,8 +12,10 @@ module Algorithm : sig
   val set-linenumber-start : int -> algorithm-config -> algorithm-config
   val set-prefixf : (context -> int -> inline-boxes) -> algorithm-config -> algorithm-config
   val set-commentf : (context -> inline-text -> inline-boxes) -> algorithm-config -> algorithm-config
+  val set-indentrulef : (context -> length * length -> length -> graphics list) -> algorithm-config -> algorithm-config
 
   val null-prefixf : context -> int -> inline-boxes
+  val simple-indentrulef : context -> length * length -> length -> graphics list
 
   val inline-scheme : context -> bool -> inline-text -> block-boxes
   val block-scheme : context -> inline-text -> block-text -> inline-text -> block-boxes
@@ -33,6 +35,7 @@ end = struct
     indent-scale : float;
     prefixf : context -> int -> inline-boxes;
     commentf : context -> inline-text -> inline-boxes;
+    indentrulef : context -> length * length -> length -> graphics list;
   |)
 
   % current line count (always start from 0)
@@ -92,6 +95,18 @@ end = struct
     in
     discretionary 0 inline-fil inline-fil inline-fil ++ shape-triangle ++ (read-inline ctx it)
 
+  let simple-indentrulef ctx (x, y) height =
+    let font-size = ctx |> get-font-size in
+    let x = x +' (font-size *' 0.2) in
+    [
+      start-path (x, y +' height)
+      |> line-to (x, y)
+      |> terminate-path
+      |> stroke 0.5pt (get-text-color ctx)
+    ]
+
+  let null-indentrulef ctx (x, y) height = []
+
   let default-config = (|
     font-set = FssFonts.default-font-set;
     keyword-style = [bold];
@@ -99,6 +114,7 @@ end = struct
     indent-scale = 1.;
     prefixf = default-prefixf;
     commentf = default-commentf;
+    indentrulef = null-indentrulef;
   |)
 
   let set-font-set font-set config = (| config with font-set = font-set |)
@@ -107,8 +123,13 @@ end = struct
   let set-linenumber-start n config = (| config with linenumber-start = n |)
   let set-prefixf prefixf config = (| config with prefixf = prefixf |)
   let set-commentf commentf config = (| config with commentf = commentf |)
+  let set-indentrulef indentrulef config = (| config with indentrulef = indentrulef |)
 
   let-mutable config <- default-config
+
+  let indent-length ctx scale =
+    let font-size = ctx |> get-font-size in
+    (font-size *' scale) *' (float !indent)
 
   let inline-scheme ctx with-prefix it =
     let config = !config in
@@ -124,8 +145,7 @@ end = struct
         inline-nil
       in
       % indent before main content
-      let font-size = ctx |> get-font-size in
-      let indent-ib = inline-skip ((font-size *' config#indent-scale) *' (float !indent)) in
+      let indent-ib = indent-length ctx config#indent-scale |> inline-skip in
       % comment
       let comment-ib = match !line-comment with
       | Some(it) -> config#commentf ctx it
@@ -134,6 +154,7 @@ end = struct
       let line-ib = prefix-ib ++ indent-ib ++ ib ++ comment-ib in
       % adjust paragraph margin to keep the line feed constant
       let (_, h, d) = get-natural-metrics line-ib in
+      let font-size = ctx |> get-font-size in
       let ctx = ctx |> set-paragraph-margin (font-size *' 0.6 -' !last-depth) 0pt in
       % side effects
       let () = if with-prefix then line-counter <- !line-counter + 1 else () in
@@ -141,13 +162,31 @@ end = struct
       let () = line-comment <- None in
       line-break true true ctx line-ib
 
+  let make-indent-rule ctx config height =
+    let shift-x =
+      let prefix = config#prefixf ctx (config#linenumber-start + !line-counter) in
+      let (prefix-w, _, _) = get-natural-metrics prefix in
+      let indent = indent-length ctx config#indent-scale in
+      prefix-w +' indent
+    in
+    let ib =
+      inline-graphics 0pt 0pt 0pt (fun (x, y) ->
+        config#indentrulef ctx (x +' shift-x, y) height)
+    in
+    let ctx = ctx |> set-paragraph-margin 0pt 0pt in
+    line-break true true ctx ib
+
   let block-scheme ctx start inner closing =
+    % generate each block
     let start-bb = inline-scheme ctx true start in
     let () = indent <- !indent + 1 in
     let inner-bb = read-block ctx inner in
     let () = indent <- !indent - 1 in
     let closing-bb = inline-scheme ctx true closing in
-    start-bb +++ inner-bb +++ closing-bb
+    % generate indent rule if needed
+    let indent-rule = make-indent-rule ctx !config (get-natural-length inner-bb) in
+    % concatenating
+    start-bb +++ inner-bb +++ indent-rule +++ closing-bb
 
   let-inline ctx \keyword it =
     let config = !config in
