@@ -305,6 +305,16 @@ document (|
           +Ensure{something}
         >
       >
+
+      +two-column<
+        +code(```
+        +State{\Return{something}}
+        ```);
+      ><
+        +algorithmic<
+          +AlgorithmStyleDefault.State{\Return{something}}
+        >
+      >
     >
   >
 
