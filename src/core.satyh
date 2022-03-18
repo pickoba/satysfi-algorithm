@@ -48,12 +48,22 @@ end = struct
   let-mutable last-depth <- 0pt
 
   let default-prefixf ctx num =
-    let font-size = ctx |> get-font-size in
-    let ctx = ctx |> set-font-size (font-size *' 0.8) in
-    let num-it = embed-string (arabic num) in
-    let num-ib = read-inline ctx {#num-it;:\ } in
-    let (w, _, _) = get-natural-metrics num-ib in
-    let skip = inline-skip (10pt -' w) in
+    let prefix n =
+      let ctx = 
+        let size = ctx |> get-font-size in
+        ctx |> set-font-size (size *' 0.8)
+      in
+      let it = embed-string (arabic n) in
+      let ib = read-inline ctx {#it;:\ \ } in
+      ib
+    in
+    let width-of ib =
+      let (w, _, _) = get-natural-metrics ib in w
+    in
+    let num-ib = prefix num in
+    % At least two digits wide.
+    let required-ib = prefix 66 in
+    let skip = inline-skip (width-of required-ib -' width-of num-ib) in
     skip ++ num-ib
 
   let null-prefixf ctx num =
