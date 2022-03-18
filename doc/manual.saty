@@ -472,10 +472,14 @@ document (|
         ** 行の開始番号。
       * `indent-scale` : `float`（デフォルト値 : `1.5`）
         ** フォントサイズに対するインデントサイズの比。
+      * `linefeed-scale` : `float`（デフォルト値 : `1.2`）
+        ** フォントサイズに対する行送りの比。
       * `prefixf` : `context -> int -> inline-boxes`（デフォルト値 : `default-prefixf`）
         ** 各行のプレフィックス（行番号表示）をカスタマイズするためのフック。行番号を非表示にしたい場合はここに `Algorithm.null-prefixf` を指定。
       * `commentf` : `context -> inline-text -> inline-boxes`（デフォルト値 : `default-commentf`）
         ** コメントをカスタマイズするためのフック。
+      * `indentrulef` : `context -> length * length -> length -> graphics list`（デフォルト値 : `null-indentrulef`）
+        ** インデントルールをカスタマイズするためのフック。`Algorithm.simple-indentrulef` に設定するとインデントルールが引かれる。今後仕様変更の可能性あり。
     }
 
     +p{
@@ -488,6 +492,7 @@ document (|
       |> set-linenumber-start 10
       |> set-keyword-style [bold; italic]
       |> set-indent-scale 2.
+      |> set-linefeed-scale 1.5
       |> set-commentf (fun ctx it ->
           (inline-skip 15pt ++ read-inline ctx {// #it;}))
     )<
@@ -502,6 +507,7 @@ document (|
       |> set-linenumber-start 10
       |> set-keyword-style [bold; italic]
       |> set-indent-scale 2.
+      |> set-linefeed-scale 1.5
       |> set-commentf (fun ctx it ->
           (inline-skip 15pt ++ read-inline ctx {// #it;}))
     )<
