@@ -52,6 +52,9 @@ end = struct
   % "depth" of the last line retrieved by get-natural-metrics
   let-mutable last-depth <- 0pt
 
+  % whether or not the line is first
+  let-mutable is-first-line <- true
+
   let default-prefixf ctx num =
     let prefix n =
       let ctx =
@@ -159,11 +162,12 @@ end = struct
       % adjust block skip size to keep the line feed constant
       let (_, h, d) = get-natural-metrics line-ib in
       let linefeed = get-font-size ctx *' config#linefeed-scale in
-      let skip = block-skip (linefeed -' h -' !last-depth) in
+      let skip = if !is-first-line then block-nil else block-skip (linefeed -' h -' !last-depth) in
       % side effects
       let () = if with-prefix then line-counter <- !line-counter + 1 else () in
       let () = last-depth <- d in
       let () = line-comment <- None in
+      let () = is-first-line <- false in
       skip +++ line-break true true ctx line-ib
 
   let make-indent-rule ctx config height =
@@ -205,6 +209,7 @@ end = struct
     let () = indent <- 0 in
     let () = line-comment <- None in
     let () = last-depth <- 0pt in
+    let () = is-first-line <- true in
     let ctx = ctx |> set-paragraph-margin 0pt 0pt in
     read-block ctx '<
       +font-style[font-set config#font-set]<#inner;>
