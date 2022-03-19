@@ -1,4 +1,4 @@
-@import: ../core
+@import: ../algorithm
 @import: ../utils
 
 open Algorithm

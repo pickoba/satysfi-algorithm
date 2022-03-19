@@ -2,7 +2,7 @@
 @require: fss/style
 @require: itemize
 
-@import: ../src/core
+@import: ../src/algorithm
 @import: ../src/style/c
 @import: ../src/style/python
 
@@ -42,7 +42,7 @@ document (|
     }
 
     +code(```
-    @require: algorithm/core
+    @require: algorithm/algorithm
     @require: algorithm/style/default
     ```);
 
@@ -409,7 +409,7 @@ document (|
       }
 
       +code(```
-      @require: algorithm/core
+      @require: algorithm/algorithm
       @require: algorithm/style/python
       ```);
 
@@ -436,7 +436,7 @@ document (|
       }
 
       +code(```
-      @require: algorithm/core
+      @require: algorithm/algorithm
       @require: algorithm/style/c
       ```);
 
