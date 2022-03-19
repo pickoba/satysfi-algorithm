@@ -54,8 +54,21 @@ end = struct
   % "depth" of the last line retrieved by get-natural-metrics
   let-mutable last-depth <- 0pt
 
-  % whether or not the line is first
+  % whether or not the line is first in the block text
   let-mutable is-first-line <- true
+
+  % first line heights for each block text.
+  let-mutable first-line-heights <- []
+
+  % util: push
+  let push x l =
+    l <- x :: !l
+
+  % util: pop
+  let pop l =
+    match !l with
+    | [] -> None
+    | x :: xs -> let () = l <- xs in Some(x)
 
   let default-prefixf ctx num =
     let prefix n =
@@ -136,6 +149,10 @@ end = struct
     let font-size = ctx |> get-font-size in
     (font-size *' config#indent-scale) *' (float indent)
 
+  let linefeed-skip ctx config h d =
+    let linefeed = get-font-size ctx *' config#linefeed-scale in
+    block-skip (linefeed -' h -' d)
+
   let inline-scheme ctx with-prefix it =
     let config = !config in
     let ib = read-inline ctx it in
@@ -159,10 +176,10 @@ end = struct
       let line-ib = prefix-ib ++ indent-ib ++ ib ++ comment-ib in
       % adjust block skip size to keep the line feed constant
       let (_, h, d) = get-natural-metrics line-ib in
-      let linefeed = get-font-size ctx *' config#linefeed-scale in
-      let skip = if !is-first-line then block-nil else block-skip (linefeed -' h -' !last-depth) in
+      let skip = if !is-first-line then block-nil else linefeed-skip ctx config h !last-depth in
       % side effects
       let () = if with-prefix then line-counter <- !line-counter + 1 else () in
+      let () = if !is-first-line then push h first-line-heights else () in
       let () = last-depth <- d in
       let () = line-comment <- None in
       let () = is-first-line <- false in
@@ -182,14 +199,28 @@ end = struct
     block-frame-breakable ctx pad ds (fun ctx -> read-block ctx bt)
 
   let block-scheme ctx start inner closing =
-    % generate each block
+    let config = !config in
+    % start block
     let start-bb = inline-scheme ctx true start in
+    let start-depth = !last-depth in
+    % inner block
+    let () = is-first-line <- true in
     let () = indent <- !indent + 1 in
-    let inner-bb = add-indent-rule ctx !config inner in
+    let inner-bb = add-indent-rule ctx config inner in
+    let skip-before-inner =
+      if !is-first-line then
+        % no commands in inner
+        block-nil
+      else
+        let h = pop first-line-heights |> Option.from 0pt in
+        linefeed-skip ctx config h start-depth
+    in
     let () = indent <- !indent - 1 in
+    let () = is-first-line <- false in
+    % closing block
     let closing-bb = inline-scheme ctx true closing in
     % concatenating
-    start-bb +++ inner-bb +++ closing-bb
+    start-bb +++ skip-before-inner +++ inner-bb +++ closing-bb
 
   let-inline ctx \keyword it =
     let config = !config in
