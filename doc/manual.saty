@@ -478,7 +478,7 @@ document (|
         ** 各行のプレフィックス（行番号表示）をカスタマイズするためのフック。行番号を非表示にしたい場合はここに `Algorithm.null-prefixf` を指定。
       * `commentf` : `context -> inline-text -> inline-boxes`（デフォルト値 : `default-commentf`）
         ** コメントをカスタマイズするためのフック。
-      * `indentrulef` : `context -> length * length -> length -> graphics list`（デフォルト値 : `null-indentrulef`）
+      * `indentrulef` : `context -> length -> deco-set`（デフォルト値 : `fun _ _ -> VDecoSet.empty`）
         ** インデントルールをカスタマイズするためのフック。`Algorithm.simple-indentrulef` に設定するとインデントルールが引かれる。今後仕様変更の可能性あり。
     }
 
