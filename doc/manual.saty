@@ -494,7 +494,7 @@ document (|
       |> set-indent-scale 2.
       |> set-linefeed-scale 1.5
       |> set-commentf (fun ctx it ->
-          (inline-skip 15pt ++ read-inline ctx {// #it;}))
+          (inline-skip 15pt ++ read-inline ctx {// #it;} ++ inline-fil))
     )<
       +State{${s \leftarrow 0}\Comment{comment}}
       +For{${i \leftarrow 1, n}}<
@@ -509,7 +509,7 @@ document (|
       |> set-indent-scale 2.
       |> set-linefeed-scale 1.5
       |> set-commentf (fun ctx it ->
-          (inline-skip 15pt ++ read-inline ctx {// #it;}))
+          (inline-skip 15pt ++ read-inline ctx {// #it;} ++ inline-fil))
     )<
       +AlgorithmStyleDefault.State{${s \leftarrow 0}\Comment{comment}}
       +AlgorithmStyleDefault.For{${i \leftarrow 1, n}}<
