@@ -118,7 +118,9 @@ end = struct
   let simple-indentrulef ctx shift-x =
     let deco (x, y) w h d =
       let color = get-text-color ctx in
-      let path = Gr.line (x +' shift-x, y -' d) (x +' shift-x, y +' h) in
+      let delta = get-font-size ctx *' 0.3 in
+      let x = x +' shift-x +' delta in
+      let path = Gr.line (x, y -' d) (x, y +' h) in
       [stroke 0.5pt color path]
     in
     (deco, deco, deco, deco)
