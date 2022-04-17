@@ -155,11 +155,11 @@ end = struct
     let linefeed = get-font-size ctx *' config#linefeed-scale in
     block-skip (linefeed -' h -' d)
 
-  let inline-scheme ctx with-prefix it =
+  let inline-scheme-inner ctx ignore-if-empty with-prefix it =
     let config = !config in
     let ib = read-inline ctx it in
     let (w, h, d) = get-natural-metrics ib in
-    if Length.(w == 0pt && h == 0pt && d == 0pt) then
+    if ignore-if-empty && Length.(w == 0pt && h == 0pt && d == 0pt) then
       block-nil
     else
       % line number
@@ -187,6 +187,8 @@ end = struct
       let () = is-first-line <- false in
       skip +++ line-break true true ctx line-ib
 
+  let inline-scheme ctx with-prefix it = inline-scheme-inner ctx false with-prefix it
+
   let add-indent-rule ctx config bt =
     let pad = (0pt, 0pt, 0pt, 0pt) in
     let ds =
@@ -203,7 +205,7 @@ end = struct
   let block-scheme ctx start inner closing =
     let config = !config in
     % start block
-    let start-bb = inline-scheme ctx true start in
+    let start-bb = inline-scheme-inner ctx true true start in
     let start-depth = !last-depth in
     % inner block
     let () = is-first-line <- true in
@@ -220,7 +222,7 @@ end = struct
     let () = indent <- !indent - 1 in
     let () = is-first-line <- false in
     % closing block
-    let closing-bb = inline-scheme ctx true closing in
+    let closing-bb = inline-scheme-inner ctx true true closing in
     % concatenating
     start-bb +++ skip-before-inner +++ inner-bb +++ closing-bb
 
