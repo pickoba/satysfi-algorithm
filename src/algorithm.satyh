@@ -25,7 +25,7 @@ module Algorithm : sig
 
   val \keyword : [inline-text] inline-cmd
 
-  direct +algorithmic : [(algorithm-config -> algorithm-config)?; block-text] block-cmd
+  direct +algorithmic : [(algorithm-config -> algorithm-config) list?; block-text] block-cmd
   direct \Comment : [inline-text] inline-cmd
   direct +Comment : [inline-text] block-cmd
 
@@ -229,9 +229,9 @@ end = struct
     let style = config#keyword-style in
     read-inline ctx {\font-style(style)(it);}
 
-  let-block ctx +algorithmic ?:format inner =
-    let format = format |> Option.from (fun o -> o) in
-    let () = config <- format default-config in
+  let-block ctx +algorithmic ?:formatlst inner =
+    let formatlst = formatlst |> Option.from [] in
+    let () = config <- formatlst |> List.fold-left (fun acc f -> f acc) default-config in
     let config = !config in
     let () = line-counter <- 0 in
     let () = indent <- 0 in

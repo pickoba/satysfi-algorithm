@@ -483,19 +483,19 @@ document (|
     }
 
     +p{
-      実際にはこれらに `set-` を前置した関数を連結することでスタイルを指定します。
+      実際にはこれらに `set-` を前置した関数を並べることでスタイルを指定します。
       例えば以下のようにカスタマイズできます\footnote{\SATySFi; v0.1.0 がリリースされた後に、ラベル付きオプショナル引数を利用する形に変更する予定です。}。ここでも `Algorithm` モジュールが `open` されていることを仮定しています。
     }
 
     +code(```
-    +algorithmic?:(fun config -> config
-      |> set-linenumber-start 10
-      |> set-keyword-style [bold; italic]
-      |> set-indent-scale 2.
-      |> set-linefeed-scale 1.5
-      |> set-commentf (fun ctx it ->
-          (inline-skip 15pt ++ read-inline ctx {// #it;} ++ inline-fil))
-    )<
+    +algorithmic?:[
+      set-linenumber-start 10;
+      set-keyword-style [bold; italic];
+      set-indent-scale 2.;
+      set-linefeed-scale 1.5;
+      set-commentf (fun ctx it ->
+          (inline-skip 15pt ++ read-inline ctx {// #it;} ++ inline-fil));
+    ]<
       +State{${s \leftarrow 0}\Comment{comment}}
       +For{${i \leftarrow 1, n}}<
         +State{${s \leftarrow s + i}}
@@ -503,14 +503,14 @@ document (|
     >
     ```);
 
-    +algorithmic?:(fun config -> config
-      |> set-linenumber-start 10
-      |> set-keyword-style [bold; italic]
-      |> set-indent-scale 2.
-      |> set-linefeed-scale 1.5
-      |> set-commentf (fun ctx it ->
-          (inline-skip 15pt ++ read-inline ctx {// #it;} ++ inline-fil))
-    )<
+    +algorithmic?:[
+      set-linenumber-start 10;
+      set-keyword-style [bold; italic];
+      set-indent-scale 2.;
+      set-linefeed-scale 1.5;
+      set-commentf (fun ctx it ->
+          (inline-skip 15pt ++ read-inline ctx {// #it;} ++ inline-fil));
+    ]<
       +AlgorithmStyleDefault.State{${s \leftarrow 0}\Comment{comment}}
       +AlgorithmStyleDefault.For{${i \leftarrow 1, n}}<
         +AlgorithmStyleDefault.State{${s \leftarrow s + i}}
