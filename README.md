@@ -1,5 +1,7 @@
 # satysfi-algorithm
 
+[![CI](https://github.com/pickoba/satysfi-algorithm/actions/workflows/ci.yml/badge.svg)](https://github.com/pickoba/satysfi-algorithm/actions/workflows/ci.yml)
+
 Typesetting algorithms in pseudo-code. It is the equivalent of the algorithmicx package in LaTeX.
 
 ## Demo with Gitpod
