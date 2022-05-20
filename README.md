@@ -2,6 +2,12 @@
 
 Typesetting algorithms in pseudo-code. It is the equivalent of the algorithmicx package in LaTeX.
 
+## Demo with Gitpod
+
+You can try this library on the web using Gitpod. Click the button below to start a new environment:
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/pickoba/satysfi-algorithm/blob/main/doc/manual.saty)
+
 ## Installation
 
 Use [Satyrographos](https://github.com/na4zagin3/satyrographos) to install this library.
