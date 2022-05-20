@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        satysfi-version:
+          - 0.0.6
+          - 0.0.7
+    runs-on: ubuntu-latest
+    container:
+      image: amutake/satysfi:${{ matrix.satysfi-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run opam lint
+        run: opam lint
+      - name: Pin opam packages
+        run: opam pin add -v "file://$PWD"
+      - name: Run satyrographos lint
+        run: opam exec -- satyrographos lint
