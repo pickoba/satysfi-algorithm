@@ -23,6 +23,10 @@ jobs:
       - name: Run opam lint
         run: opam lint
       - name: Pin opam packages
-        run: opam pin add -v "file://$PWD"
+        run: |
+          export HOME=/root
+          opam pin add -v "file://$PWD"
       - name: Run satyrographos lint
-        run: opam exec -- satyrographos lint
+        run: |
+          export HOME=/root
+          opam exec -- satyrographos lint
