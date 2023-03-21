@@ -14,6 +14,7 @@ jobs:
         satysfi-version:
           - 0.0.6
           - 0.0.7
+          - 0.0.8
     runs-on: ubuntu-latest
     container:
       image: amutake/satysfi:${{ matrix.satysfi-version }}
@@ -27,8 +28,8 @@ jobs:
           export HOME=/root
           opam pin add -v "file://$PWD"
       - name: Run satyrographos lint
-        # satyrographos lint for v0.0.6 is only available with amutake/satysfi:0.0.7
+        # satyrographos lint for v0.0.6 is only available with amutake/satysfi:0.0.7 or later
         run: |
           export HOME=/root
           opam exec -- satyrographos lint --satysfi-version 0.0.6
-        if: ${{ matrix.satysfi-version == '0.0.7' }}
+        if: ${{ matrix.satysfi-version == '0.0.8' }}
